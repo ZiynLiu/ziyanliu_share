@@ -1,0 +1,27 @@
+
+在研究中，我们有时会需要分析两种地理要素之间的相关性，并绘制二者相关系数的空间分布图，如下图所示：
+![image.png](https://cdn.nlark.com/yuque/0/2022/png/21513299/1671871753251-5159d006-bee6-4332-b4a8-02d0dfe44c02.png#averageHue=%23f7f7f5&clientId=ubc059d9a-abf0-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=810&id=u0df770d5&margin=%5Bobject%20Object%5D&name=image.png&originHeight=810&originWidth=1007&originalType=binary&ratio=1&rotation=0&showTitle=false&size=600643&status=done&style=none&taskId=u08790f80-39f7-4e2c-a715-50280a665a8&title=&width=1007)
+> _图片来源：潘竟虎,黄克军,李真.2001—2010年疏勒河流域植被净初级生产力时空变化及其与气候因子的关系[J].生态学报,2017,37(06):1888-1899._
+
+在这里介绍两种方法，分别采用ArcGIS和ENVI计算两个栅格之间相关系数的空间分布。
+# 数据准备与预处理
+为了简化计算，在此只采用2019年1月和2月的PM2.5数据和ODIAC碳排放数据进行计算。首先需要将所有数据裁剪到同一范围，并利用重采样统一栅格行列号。
+# 用 ArcGIS 计算相关系数
+采用ArcGIS计算相关系数的思路是利用栅格计算器根据相关系数的计算公式进行计算，相关系数的公式为：
+![image.png](https://cdn.nlark.com/yuque/0/2022/png/21513299/1671873219972-29478de3-a429-43ba-a0a9-c8d2e3836e91.png#averageHue=%23fdfcfb&clientId=u38e97ed7-fffe-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=152&id=u70de08a4&margin=%5Bobject%20Object%5D&name=image.png&originHeight=152&originWidth=673&originalType=binary&ratio=1&rotation=0&showTitle=false&size=33480&status=done&style=none&taskId=uec68131e-ae5d-4658-9538-91d70e6d39d&title=&width=673)
+在本例中，在栅格计算器中输入以下公式即可计算出相关系数的空间分布：
+```
+((("odiac2020_1km_excl_intl_19017" - "odiac2020_ex_mean") * ("PM2.5_201901.tif" - "pm_ex_mean")) + (("odiac2020_1km_excl_intl_19021" - "odiac2020_ex_mean") * ("PM2.5_201902.tif" - "pm_ex_mean"))) / (Power((Power(("odiac2020_1km_excl_intl_19017"- "odiac2020_ex_mean"),2) + Power(("odiac2020_1k
+m_excl_intl_19021" - "odiac2020_ex_mean"),2)) * (Power(("PM2.5_201901.tif" - "pm_ex_mean"),2) + Power(("PM2.5_201902.tif" - "pm_ex_mean"),2) ),0.5))
+```
+
+# 用ENVI计算相关系数
+用ENVI计算相关系数则需要依赖一个插件：Pearson相关系数计算器，可以在ENVI APP store中安装。
+![image.png](https://cdn.nlark.com/yuque/0/2022/png/21513299/1671875503285-1d9240e5-5570-44ac-bc0c-8ce86ec80dc3.png#averageHue=%23e9e7e6&clientId=u38e97ed7-fffe-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=173&id=u31f07dd3&margin=%5Bobject%20Object%5D&name=image.png&originHeight=173&originWidth=1034&originalType=binary&ratio=1&rotation=0&showTitle=false&size=31908&status=done&style=none&taskId=ude9796de-c747-4104-8125-33e29f79397&title=&width=1034)
+首先采用Layer stacking工具进行波段合成，将一月份和二月份的PM2.5合成到一起，同理，将一月份和二月份的碳排放数据合成到一起。
+![image.png](https://cdn.nlark.com/yuque/0/2022/png/21513299/1671875615069-ae1fd63a-1494-4483-a4c2-3a96d95115cb.png#averageHue=%23e8e8e8&clientId=u38e97ed7-fffe-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=420&id=u89bffa37&margin=%5Bobject%20Object%5D&name=image.png&originHeight=420&originWidth=593&originalType=binary&ratio=1&rotation=0&showTitle=false&size=18227&status=done&style=none&taskId=u2b11e936-e8bd-4e6c-b62e-b191e5c89ad&title=&width=593)
+随后打开插件，分别输入两个合成后的栅格，即可计算出相关系数的空间分布。
+![image.png](https://cdn.nlark.com/yuque/0/2022/png/21513299/1671875841127-3ae763b0-546d-42aa-91ff-fe09b98612f0.png#averageHue=%23ebeaea&clientId=u38e97ed7-fffe-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=199&id=uc5d3a2d4&margin=%5Bobject%20Object%5D&name=image.png&originHeight=199&originWidth=330&originalType=binary&ratio=1&rotation=0&showTitle=false&size=9848&status=done&style=none&taskId=uc43f3f0f-fafd-4980-9254-3439549aa28&title=&width=330)
+# 两种计算结果的比较
+![image.png](https://cdn.nlark.com/yuque/0/2022/png/21513299/1671875220642-31964463-87b1-4eee-9b6e-64685fff1b0c.png#averageHue=%23f7f1f1&clientId=u38e97ed7-fffe-4&crop=0&crop=0&crop=1&crop=1&from=paste&height=455&id=u91062c48&margin=%5Bobject%20Object%5D&name=image.png&originHeight=455&originWidth=1079&originalType=binary&ratio=1&rotation=0&showTitle=false&size=46798&status=done&style=none&taskId=uf2bbc498-b73f-40fe-bbeb-26cc3cddb7a&title=&width=1079)
+得出的结果如上图所示，蓝色表示相关系数为-1，红色表示相关系数为1；由于仅仅是一个示例，采用的数据较少，所以得出相关系数的空间分布不明显。但是，不难看出，采用ArcGIS和ENVI计算出的相关系数空间分布结果是类似的。而采用ENVI会比ArcGIS来得更简单。
